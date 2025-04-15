@@ -1,114 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>아스팔트 파괴하중 계산기</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* 기본 스타일 설정 */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            background-color: #ffffff;
-            padding: 30px 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
-            font-weight: bold;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #555;
-            text-align: left;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0 20px 0;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 50px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #4CAF50;
-        }
-
-        .error {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #f44336;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .card { box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     </style>
 </head>
-<body>
-
-    <div class="container">
-        <h1>아스팔트 파괴하중 계산기</h1>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="card bg-white p-8 rounded-2xl w-96">
+        <h1 class="text-2xl font-bold mb-6 text-blue-600">🔧 아스팔트 파괴하중 계산기</h1>
         
-        <form method="POST">
-            <label for="temp_celsius">아스팔트 온도(℃):</label>
-            <input type="text" id="temp_celsius" name="temp_celsius" required><br>
+        <form id="calcForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">아스팔트 온도(℃)</label>
+                <input type="number" name="temp" step="0.1" 
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">두께(m)</label>
+                <input type="number" name="thickness" step="0.01" 
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">공동 반지름(m)</label>
+                <input type="number" name="radius" step="0.01" 
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+            </div>
 
-            <label for="thickness_m">아스팔트 두께(m):</label>
-            <input type="text" id="thickness_m" name="thickness_m" required><br>
-
-            <label for="void_radius_m">공동의 반지름(m):</label>
-            <input type="text" id="void_radius_m" name="void_radius_m" required><br>
-
-            <input type="submit" value="계산하기">
+            <button type="submit" 
+                class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                계산하기
+            </button>
         </form>
 
-        {% if result is not none %}
-            {% if result == "❌ 올바른 값을 입력해주세요!" %}
-                <div class="error">{{ result }}</div>
-            {% else %}
-                <div class="result">계산된 아스팔트 파괴하중: {{ result }} kgf</div>
-            {% endif %}
-        {% endif %}
+        <div id="result" class="mt-4 p-4 rounded-lg bg-gray-50 hidden"></div>
     </div>
 
+    <script>
+        document.getElementById('calcForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            const response = await fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData)
+            });
+            
+            const data = await response.json();
+            const resultDiv = document.getElementById('result');
+            
+            if(data.status === 'success') {
+                resultDiv.classList.remove('hidden', 'bg-red-50');
+                resultDiv.classList.add('bg-green-50', 'text-green-700');
+                resultDiv.innerHTML = data.result;
+            } else {
+                resultDiv.classList.remove('hidden', 'bg-green-50');
+                resultDiv.classList.add('bg-red-50', 'text-red-700');
+                resultDiv.innerHTML = data.message;
+            }
+            resultDiv.classList.remove('hidden');
+        });
+    </script>
 </body>
 </html>
