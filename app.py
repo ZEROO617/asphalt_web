@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
@@ -13,6 +14,9 @@ def calculate_failure_load(temp_celsius, thickness_m, void_radius_m):
     P_kgf = round(P_newton / 9.81)
 
     return P_kgf
+
+def home():
+    return "Hello, Render!"
 
 @app.route('/')
 def index():
@@ -30,4 +34,6 @@ def result():
         return "<h3>입력을 다시 확인해주세요! 숫자만 입력 가능합니다.</h3>"
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Render에서 자동으로 설정한 포트를 사용하도록 수정
+    port = int(os.environ.get("PORT", 5000))  # PORT 환경 변수를 사용하고, 없으면 기본 5000 사용
+    app.run(host="0.0.0.0", port=port, debug=True)
