@@ -29,5 +29,5 @@ def result():
     except:
         return "<h3>입력을 다시 확인해주세요! 숫자만 입력 가능합니다.</h3>"
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
